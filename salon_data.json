@@ -1,0 +1,33 @@
+{
+    "clients": [
+        {
+            "id": 1,
+            "name": "Anna",
+            "phone": "123"
+        }
+    ],
+    "masters": [
+        {
+            "id": 1,
+            "name": "Olga",
+            "services": [
+                1
+            ]
+        }
+    ],
+    "services": [
+        {
+            "id": 1,
+            "name": "Haircut",
+            "duration": 30,
+            "price": 20
+        },
+        {
+            "id": 2,
+            "name": "Coloring",
+            "duration": 60,
+            "price": 50
+        }
+    ],
+    "appointments": []
+}
