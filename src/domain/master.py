@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List
 
 from .person import Person
@@ -28,3 +28,7 @@ class Master(Person):
             raise ScheduleError("This time slot is already booked")
 
         self.schedule.append(time)
+
+    def release_time(self, time: datetime) -> None:
+        if time in self.schedule:
+            self.schedule.remove(time)

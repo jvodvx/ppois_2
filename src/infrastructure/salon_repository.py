@@ -1,16 +1,21 @@
 import json
 from datetime import datetime
+from pathlib import Path
 
 from ..domain.client import Client
 from ..domain.master import Master
 from ..domain.service import Service
-from ..domain.appointment import Appointment
+from ..domain.appointment import Appointment, AppointmentStatus
 from ..domain.salon import Salon
 
 
 class SalonRepository:
 
-    def save(self, salon: Salon, filename="salon_data.json"):
+    def __init__(self, filename: str = "salon_data.json"):
+        self.filename = Path(filename)
+
+    def save(self, salon: Salon, filename: str | None = None):
+        target = Path(filename) if filename is not None else self.filename
 
         data = {
             "clients": [
@@ -47,15 +52,15 @@ class SalonRepository:
             ],
         }
 
-        with open(filename, "w") as f:
+        with target.open("w", encoding="utf-8") as f:
             json.dump(data, f, indent=4)
 
-    def load(self, filename="salon_data.json") -> Salon:
-
+    def load(self, filename: str | None = None) -> Salon:
+        target = Path(filename) if filename is not None else self.filename
         salon = Salon()
 
         try:
-            with open(filename) as f:
+            with target.open(encoding="utf-8") as f:
                 data = json.load(f)
         except FileNotFoundError:
             return salon
@@ -74,32 +79,31 @@ class SalonRepository:
             salon.services.append(service)
             services[s["id"]] = service
 
-
         for m in data.get("masters", []):
 
             master = Master(m["id"], m["name"])
-
             masters[m["id"]] = master
             salon.masters.append(master)
 
             for service_id in m.get("services", []):
-
                 service = services.get(service_id)
 
                 if service:
                     master.add_service(service)
 
-
         for a in data.get("appointments", []):
-
             appointment = Appointment(
                 a["id"],
                 clients[a["client"]],
                 masters[a["master"]],
                 services[a["service"]],
                 datetime.fromisoformat(a["time"]),
+                AppointmentStatus(a.get("status", AppointmentStatus.CREATED.value)),
             )
 
             salon.appointments.append(appointment)
+
+            if appointment.status == AppointmentStatus.CREATED:
+                appointment.master.book_time(appointment.time)
 
         return salon

@@ -5,6 +5,7 @@ from enum import Enum
 from .client import Client
 from .master import Master
 from .service import Service
+from ..exceptions import BookingError
 
 
 class AppointmentStatus(Enum):
@@ -24,10 +25,10 @@ class Appointment:
 
     def cancel(self) -> None:
         if self.status != AppointmentStatus.CREATED:
-            raise ValueError("Cannot cancel appointment")
+            raise BookingError("Cannot cancel appointment")
         self.status = AppointmentStatus.CANCELLED
 
     def complete(self) -> None:
         if self.status != AppointmentStatus.CREATED:
-            raise ValueError("Cannot complete appointment")
+            raise BookingError("Cannot complete appointment")
         self.status = AppointmentStatus.COMPLETED

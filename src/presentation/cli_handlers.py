@@ -20,6 +20,7 @@ class SalonCLI:
             print("4 Book appointment")
             print("5 Show appointments")
             print("6 Cancel appointment")
+            print("7 Complete appointment")
             print("0 Exit")
 
             choice = input("Choose action: ")
@@ -43,6 +44,9 @@ class SalonCLI:
 
                 elif choice == "6":
                     self.cancel_appointment()
+
+                elif choice == "7":
+                    self.complete_appointment()
 
                 elif choice == "0":
                     break
@@ -180,7 +184,7 @@ class SalonCLI:
             time,
         )
 
-        print("Appointment created:")
+        print("Appointment created")
 
     def show_appointments(self):
 
@@ -203,11 +207,21 @@ class SalonCLI:
             )
 
     def cancel_appointment(self):
-
+        self.show_appointments()
         appointment_id = int(input("Appointment id: "))
         self.manager.cancel_appointment(appointment_id)
 
         print("Appointment cancelled")
+
+    def complete_appointment(self):
+
+        self.show_appointments()
+
+        appointment_id = self.read_int("Enter appointment id: ")
+
+        self.manager.complete_appointment(appointment_id)
+
+        print("Appointment completed")
 
     def read_int(self, message: str) -> int:
         while True:

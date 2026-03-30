@@ -5,10 +5,9 @@ from src.presentation.cli_handlers import SalonCLI
 
 def main():
     repo = SalonRepository()
-
     salon = repo.load()
 
-    manager = SalonManager(salon)
+    manager = SalonManager(salon, repo)
 
     cli = SalonCLI(manager)
 
