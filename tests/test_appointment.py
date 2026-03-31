@@ -49,9 +49,10 @@ class TestAppointment(unittest.TestCase):
         )
 
         appointment.perform_service([self.tool])
+        appointment.complete()
         amount = appointment.pay()
 
-        self.assertEqual(appointment.status, AppointmentStatus.SERVICED)
+        self.assertEqual(appointment.status, AppointmentStatus.COMPLETED)
         self.assertTrue(appointment.paid)
         self.assertEqual(amount, 20)
 

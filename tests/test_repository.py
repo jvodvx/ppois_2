@@ -11,14 +11,18 @@ from src.infrastructure.salon_repository import SalonRepository
 
 class TestRepository(unittest.TestCase):
 
-    def test_repository_restores_serviced_and_paid_appointment(self) -> None:
+    @staticmethod
+    def _create_manager(repo: SalonRepository) -> SalonManager:
+        return SalonManager(Salon(), repo)
+
+    def test_repository_restores_completed_and_paid_appointment(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             data_file = Path(temp_dir) / "salon_data.json"
             repo = SalonRepository(str(data_file))
-            manager = SalonManager(Salon(), repo)
+            manager = self._create_manager(repo)
 
             client = manager.create_client("Anna", "123")
-            service = manager.create_service("Haircut", 30, 20)
+            service = manager.get_service_by_name("Haircut")
             tool = manager.create_tool("Scissors")
             mirror = manager.create_mirror("Mirror 1")
             chair = manager.create_chair("Chair 1")
@@ -36,31 +40,23 @@ class TestRepository(unittest.TestCase):
                 datetime(2026, 4, 5, 14, 0),
             )
 
-            manager.provide_hair_care_consultation(
-                appointment.id,
-                "Use a heat protectant before styling.",
-            )
-            manager.perform_haircut_and_styling(appointment.id, [tool.id])
+            manager.complete_appointment(appointment.id, tool_ids=[tool.id])
             manager.pay_for_service(appointment.id)
 
             loaded_salon = repo.load()
             loaded_appointment = loaded_salon.appointments[0]
 
-            self.assertEqual(loaded_appointment.status, AppointmentStatus.SERVICED)
+            self.assertEqual(loaded_appointment.status, AppointmentStatus.COMPLETED)
             self.assertTrue(loaded_appointment.paid)
-            self.assertEqual(
-                loaded_appointment.consultation_notes,
-                "Use a heat protectant before styling.",
-            )
 
     def test_repository_restores_active_bookings(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             data_file = Path(temp_dir) / "salon_data.json"
             repo = SalonRepository(str(data_file))
-            manager = SalonManager(Salon(), repo)
+            manager = self._create_manager(repo)
 
             client = manager.create_client("Anna", "123")
-            service = manager.create_service("Haircut", 30, 20)
+            service = manager.get_service_by_name("Haircut")
             tool = manager.create_tool("Scissors")
             mirror = manager.create_mirror("Mirror 1")
             chair = manager.create_chair("Chair 1")

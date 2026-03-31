@@ -13,7 +13,7 @@ from ..exceptions import BookingError, PaymentError, ValidationError
 
 class AppointmentStatus(Enum):
     BOOKED = "booked"
-    SERVICED = "serviced"
+    COMPLETED = "completed"
     CANCELLED = "cancelled"
 
 
@@ -37,6 +37,12 @@ class Appointment:
             raise BookingError("Cannot cancel appointment")
         self.status = AppointmentStatus.CANCELLED
 
+    def complete(self) -> None:
+        if self.status != AppointmentStatus.BOOKED:
+            raise BookingError("Cannot complete appointment")
+
+        self.status = AppointmentStatus.COMPLETED
+
     def perform_service(self, tools: list[Tool]) -> None:
         if self.status != AppointmentStatus.BOOKED:
             raise BookingError("Cannot perform service for this appointment")
@@ -45,7 +51,6 @@ class Appointment:
             raise ValidationError("At least one tool is required")
 
         self.used_tools = list(tools)
-        self.status = AppointmentStatus.SERVICED
 
     def add_consultation(self, notes: str) -> None:
         if not notes.strip():
@@ -54,7 +59,7 @@ class Appointment:
         self.consultation_notes = notes
 
     def pay(self) -> float:
-        if self.status != AppointmentStatus.SERVICED:
+        if self.status != AppointmentStatus.COMPLETED:
             raise PaymentError("Cannot accept payment before service is completed")
 
         if self.paid:

@@ -14,6 +14,13 @@ from ..infrastructure.salon_repository import SalonRepository
 
 
 class SalonManager:
+    DEFAULT_SERVICES: list[tuple[str, int, float]] = [
+        ("Haircut", 30, 25.0),
+        ("Styling", 40, 20.0),
+        ("Consultation", 20, 15.0),
+    ]
+    CONSULTATION_SERVICE_NAME = "Consultation"
+    TOOL_BASED_SERVICES = {"Haircut", "Styling"}
 
     def __init__(
         self,
@@ -29,6 +36,7 @@ class SalonManager:
         self.mirror_id = self._next_id(self.salon.mirrors)
         self.chair_id = self._next_id(self.salon.chairs)
         self.appointment_id = self._next_id(self.salon.appointments)
+        self._ensure_default_services()
 
     @staticmethod
     def _next_id(items: Iterable[object]) -> int:
@@ -43,9 +51,35 @@ class SalonManager:
         if self.repo is not None:
             self.repo.save(self.salon)
 
+    def _ensure_default_services(self) -> None:
+        if self.salon.services:
+            return
+
+        for name, duration, price in self.DEFAULT_SERVICES:
+            service = Service(self.service_id, name, duration, price)
+            self.salon.add_service(service)
+            self.service_id += 1
+
+        self._save()
+
     @staticmethod
     def _find_by_id(items: Iterable[object], item_id: int):
         return next((item for item in items if item.id == item_id), None)
+
+    def _complete_appointment(self, appointment: Appointment) -> Appointment:
+        appointment.complete()
+        appointment.hairdresser.release_time(appointment.time)
+        appointment.chair.release_time(appointment.time)
+        appointment.mirror.release_time(appointment.time)
+        self._save()
+        return appointment
+
+    def _get_appointment(self, appointment_id: int) -> Appointment:
+        appointment = self._find_by_id(self.salon.appointments, appointment_id)
+        if appointment is None:
+            raise NotFoundError("Appointment not found")
+
+        return appointment
 
     @staticmethod
     def _appointments_overlap(
@@ -121,11 +155,14 @@ class SalonManager:
         self._save()
         return hairdresser
 
-    def create_service(self, name: str, duration: int, price: float) -> Service:
-        service = Service(self.service_id, name, duration, price)
-        self.service_id += 1
-        self.salon.add_service(service)
-        self._save()
+    def get_service_by_name(self, name: str) -> Service:
+        service = next(
+            (item for item in self.salon.services if item.name == name),
+            None,
+        )
+        if service is None:
+            raise NotFoundError("Service not found")
+
         return service
 
     def create_tool(self, name: str) -> Tool:
@@ -209,54 +246,52 @@ class SalonManager:
         appointment_id: int,
         tool_ids: list[int],
     ) -> Appointment:
-        appointment = self._find_by_id(self.salon.appointments, appointment_id)
-        if appointment is None:
-            raise NotFoundError("Appointment not found")
+        return self.complete_appointment(appointment_id, tool_ids=tool_ids)
 
-        tools: list[Tool] = []
-        for tool_id in tool_ids:
-            tool = self._find_by_id(self.salon.tools, tool_id)
-            if tool is None:
-                raise NotFoundError("Tool not found")
-            tools.append(tool)
+    def complete_appointment(
+        self,
+        appointment_id: int,
+        tool_ids: Optional[list[int]] = None,
+        notes: str = "",
+    ) -> Appointment:
+        appointment = self._get_appointment(appointment_id)
+        service_name = appointment.service.name
 
-        if not appointment.hairdresser.has_tools(tools):
-            raise BookingError("Hairdresser does not have the selected tools")
+        if service_name in self.TOOL_BASED_SERVICES:
+            tools: list[Tool] = []
+            for tool_id in tool_ids or []:
+                tool = self._find_by_id(self.salon.tools, tool_id)
+                if tool is None:
+                    raise NotFoundError("Tool not found")
+                tools.append(tool)
 
-        appointment.perform_service(tools)
-        appointment.hairdresser.release_time(appointment.time)
-        appointment.chair.release_time(appointment.time)
-        appointment.mirror.release_time(appointment.time)
-        self._save()
-        return appointment
+            if not appointment.hairdresser.has_tools(tools):
+                raise BookingError("Hairdresser does not have the selected tools")
+
+            appointment.perform_service(tools)
+            return self._complete_appointment(appointment)
+
+        if service_name == self.CONSULTATION_SERVICE_NAME:
+            appointment.add_consultation(notes)
+            return self._complete_appointment(appointment)
+
+        raise BookingError("Unsupported service type")
 
     def provide_hair_care_consultation(
         self,
         appointment_id: int,
         notes: str,
     ) -> Appointment:
-        appointment = self._find_by_id(self.salon.appointments, appointment_id)
-        if appointment is None:
-            raise NotFoundError("Appointment not found")
-
-        appointment.add_consultation(notes)
-        self._save()
-        return appointment
+        return self.complete_appointment(appointment_id, notes=notes)
 
     def pay_for_service(self, appointment_id: int) -> float:
-        appointment = self._find_by_id(self.salon.appointments, appointment_id)
-        if appointment is None:
-            raise NotFoundError("Appointment not found")
-
+        appointment = self._get_appointment(appointment_id)
         amount = appointment.pay()
         self._save()
         return amount
 
     def cancel_appointment(self, appointment_id: int) -> None:
-        appointment = self._find_by_id(self.salon.appointments, appointment_id)
-        if appointment is None:
-            raise NotFoundError("Appointment not found")
-
+        appointment = self._get_appointment(appointment_id)
         appointment.cancel()
         appointment.hairdresser.release_time(appointment.time)
         appointment.chair.release_time(appointment.time)

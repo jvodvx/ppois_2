@@ -3,35 +3,175 @@
         {
             "id": 1,
             "name": "Anna",
+            "phone": "14"
+        },
+        {
+            "id": 2,
+            "name": "Boris",
             "phone": "123"
+        },
+        {
+            "id": 3,
+            "name": "Polina",
+            "phone": "65"
         }
     ],
     "hairdressers": [
         {
             "id": 1,
-            "name": "Olga",
+            "name": "Oksana",
             "services": [
-                1
+                1,
+                2
             ],
-            "tools": []
+            "tools": [
+                1,
+                2,
+                3,
+                5,
+                6
+            ]
+        },
+        {
+            "id": 2,
+            "name": "Ksenia",
+            "services": [
+                3
+            ],
+            "tools": [
+                2,
+                3,
+                4
+            ]
         }
     ],
-    "tools": [],
+    "tools": [
+        {
+            "id": 1,
+            "name": "Scissors"
+        },
+        {
+            "id": 2,
+            "name": "Brushing"
+        },
+        {
+            "id": 3,
+            "name": "Airdryer"
+        },
+        {
+            "id": 4,
+            "name": "Diffuser"
+        },
+        {
+            "id": 5,
+            "name": "Razor"
+        },
+        {
+            "id": 6,
+            "name": "Hairdye"
+        }
+    ],
     "services": [
         {
             "id": 1,
             "name": "Haircut",
             "duration": 30,
-            "price": 20
+            "price": 25.0
         },
         {
             "id": 2,
-            "name": "Coloring",
-            "duration": 60,
-            "price": 50
+            "name": "Styling",
+            "duration": 40,
+            "price": 20.0
+        },
+        {
+            "id": 3,
+            "name": "Consultation",
+            "duration": 20,
+            "price": 15.0
         }
     ],
-    "mirrors": [],
-    "chairs": [],
-    "appointments": []
+    "mirrors": [
+        {
+            "id": 1,
+            "label": "1"
+        },
+        {
+            "id": 2,
+            "label": "2"
+        },
+        {
+            "id": 3,
+            "label": "3"
+        },
+        {
+            "id": 4,
+            "label": "vip"
+        }
+    ],
+    "chairs": [
+        {
+            "id": 1,
+            "label": "1"
+        },
+        {
+            "id": 2,
+            "label": "2"
+        },
+        {
+            "id": 3,
+            "label": "3"
+        },
+        {
+            "id": 4,
+            "label": "vip"
+        }
+    ],
+    "appointments": [
+        {
+            "id": 1,
+            "client": 1,
+            "hairdresser": 1,
+            "service": 1,
+            "chair": 1,
+            "mirror": 1,
+            "time": "2026-04-14T14:00:00",
+            "consultation_notes": "",
+            "used_tools": [
+                1,
+                2
+            ],
+            "status": "completed",
+            "paid": true,
+            "payment_amount": 25.0
+        },
+        {
+            "id": 2,
+            "client": 2,
+            "hairdresser": 2,
+            "service": 3,
+            "chair": 4,
+            "mirror": 4,
+            "time": "2026-04-01T10:30:00",
+            "consultation_notes": "",
+            "used_tools": [],
+            "status": "cancelled",
+            "paid": false,
+            "payment_amount": 0.0
+        },
+        {
+            "id": 3,
+            "client": 3,
+            "hairdresser": 1,
+            "service": 2,
+            "chair": 1,
+            "mirror": 1,
+            "time": "2026-03-31T17:00:00",
+            "consultation_notes": "",
+            "used_tools": [],
+            "status": "cancelled",
+            "paid": false,
+            "payment_amount": 0.0
+        }
+    ]
 }

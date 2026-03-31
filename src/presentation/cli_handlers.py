@@ -14,16 +14,15 @@ class SalonCLI:
             print("\n--- Hairdresser System ---")
             print("1 Add client")
             print("2 Add hairdresser")
-            print("3 Add service")
+            print("3 Show services")
             print("4 Add tool")
             print("5 Add mirror")
             print("6 Add chair")
-            print("7 Book haircut")
-            print("8 Perform haircut and styling")
-            print("9 Add hair care consultation")
-            print("10 Pay for service")
-            print("11 Show client bookings")
-            print("12 Cancel booking")
+            print("7 Book appointment")
+            print("8 Complete booking")
+            print("9 Pay for service")
+            print("10 Show client bookings")
+            print("11 Cancel booking")
             print("0 Exit")
 
             choice = input("Choose action: ")
@@ -34,7 +33,7 @@ class SalonCLI:
                 elif choice == "2":
                     self.add_hairdresser()
                 elif choice == "3":
-                    self.add_service()
+                    self.show_services()
                 elif choice == "4":
                     self.add_tool()
                 elif choice == "5":
@@ -44,14 +43,12 @@ class SalonCLI:
                 elif choice == "7":
                     self.book_haircut()
                 elif choice == "8":
-                    self.perform_haircut_and_styling()
+                    self.complete_booking()
                 elif choice == "9":
-                    self.add_consultation()
-                elif choice == "10":
                     self.pay_for_service()
-                elif choice == "11":
+                elif choice == "10":
                     self.show_client_bookings()
-                elif choice == "12":
+                elif choice == "11":
                     self.cancel_booking()
                 elif choice == "0":
                     break
@@ -149,20 +146,6 @@ class SalonCLI:
         hairdresser = self.manager.create_hairdresser(name, service_ids, tool_ids)
         print("Hairdresser created:", hairdresser.name)
 
-    def add_service(self) -> None:
-        name = input("Service name: ")
-        duration = self.read_int("Duration minutes: ")
-
-        while True:
-            try:
-                price = float(input("Price: "))
-                break
-            except ValueError:
-                print("Enter a valid price")
-
-        service = self.manager.create_service(name, duration, price)
-        print("Service created:", service)
-
     def add_tool(self) -> None:
         tool = self.manager.create_tool(input("Tool name: "))
         print("Tool created:", tool)
@@ -214,26 +197,31 @@ class SalonCLI:
         )
         print("Booking created:", appointment.id)
 
-    def perform_haircut_and_styling(self) -> None:
+    def complete_booking(self) -> None:
         self.show_appointments()
         appointment_id = self.read_int("Enter booking id: ")
-        self.show_tools()
-        tool_ids = self.read_ids("Enter used tool IDs (comma separated): ")
-        appointment = self.manager.perform_haircut_and_styling(
-            appointment_id,
-            tool_ids,
-        )
-        print("Service completed for booking:", appointment.id)
+        appointment = self.manager.list_appointments()
+        selected = next((item for item in appointment if item.id == appointment_id), None)
 
-    def add_consultation(self) -> None:
-        self.show_appointments()
-        appointment_id = self.read_int("Enter booking id: ")
-        notes = input("Consultation notes: ")
-        appointment = self.manager.provide_hair_care_consultation(
-            appointment_id,
-            notes,
-        )
-        print("Consultation saved for booking:", appointment.id)
+        if selected is None:
+            print("Booking not found")
+            return
+
+        if selected.service.name == "Consultation":
+            notes = input("Consultation notes: ")
+            completed = self.manager.complete_appointment(
+                appointment_id,
+                notes=notes,
+            )
+        else:
+            self.show_tools()
+            tool_ids = self.read_ids("Enter used tool IDs (comma separated): ")
+            completed = self.manager.complete_appointment(
+                appointment_id,
+                tool_ids=tool_ids,
+            )
+
+        print("Service completed for booking:", completed.id)
 
     def pay_for_service(self) -> None:
         self.show_appointments()
