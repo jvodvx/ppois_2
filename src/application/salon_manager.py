@@ -1,14 +1,17 @@
 from datetime import datetime, timedelta
 from typing import Iterable, Optional
 
-from ..domain.salon import Salon
-from ..domain.client import Client
-from ..domain.master import Master
-from ..domain.service import Service
 from ..domain.appointment import Appointment, AppointmentStatus
+from ..domain.chair import Chair
+from ..domain.client import Client
+from ..domain.hairdresser import Hairdresser
+from ..domain.mirror import Mirror
+from ..domain.salon import Salon
+from ..domain.service import Service
+from ..domain.tool import Tool
+from ..exceptions import BookingError, NotFoundError
 from ..infrastructure.salon_repository import SalonRepository
 
-from ..exceptions import NotFoundError, BookingError
 
 class SalonManager:
 
@@ -20,15 +23,21 @@ class SalonManager:
         self.salon = salon
         self.repo = repo
         self.client_id = self._next_id(self.salon.clients)
-        self.master_id = self._next_id(self.salon.masters)
+        self.hairdresser_id = self._next_id(self.salon.hairdressers)
         self.service_id = self._next_id(self.salon.services)
+        self.tool_id = self._next_id(self.salon.tools)
+        self.mirror_id = self._next_id(self.salon.mirrors)
+        self.chair_id = self._next_id(self.salon.chairs)
         self.appointment_id = self._next_id(self.salon.appointments)
 
-    def _next_id(self, items: Iterable[object]) -> int:
-        if not items:
+    @staticmethod
+    def _next_id(items: Iterable[object]) -> int:
+        items_list = list(items)
+
+        if not items_list:
             return 1
 
-        return max(item.id for item in items) + 1
+        return max(item.id for item in items_list) + 1
 
     def _save(self) -> None:
         if self.repo is not None:
@@ -38,27 +47,44 @@ class SalonManager:
     def _find_by_id(items: Iterable[object], item_id: int):
         return next((item for item in items if item.id == item_id), None)
 
-    def _master_has_time_conflict(
-        self,
-        master: Master,
-        service: Service,
-        time: datetime,
+    @staticmethod
+    def _appointments_overlap(
+        current_start: datetime,
+        current_duration: int,
+        requested_start: datetime,
+        requested_duration: int,
     ) -> bool:
-        new_end = time + timedelta(minutes=service.duration)
+        current_end = current_start + timedelta(minutes=current_duration)
+        requested_end = requested_start + timedelta(minutes=requested_duration)
+        return requested_start < current_end and current_start < requested_end
 
+    def _has_time_conflict(
+        self,
+        time: datetime,
+        service: Service,
+        hairdresser: Hairdresser,
+        chair: Chair,
+        mirror: Mirror,
+    ) -> bool:
         for appointment in self.salon.appointments:
-            if appointment.master.id != master.id:
+            if appointment.status != AppointmentStatus.BOOKED:
                 continue
 
-            if appointment.status != AppointmentStatus.CREATED:
+            if not self._appointments_overlap(
+                appointment.time,
+                appointment.service.duration,
+                time,
+                service.duration,
+            ):
                 continue
 
-            current_start = appointment.time
-            current_end = current_start + timedelta(
-                minutes=appointment.service.duration
-            )
+            if appointment.hairdresser.id == hairdresser.id:
+                return True
 
-            if time < current_end and current_start < new_end:
+            if appointment.chair.id == chair.id:
+                return True
+
+            if appointment.mirror.id == mirror.id:
                 return True
 
         return False
@@ -70,27 +96,30 @@ class SalonManager:
         self._save()
         return client
 
-    def create_master(self, name: str, service_ids: list[int]) -> Master:
+    def create_hairdresser(
+        self,
+        name: str,
+        service_ids: list[int],
+        tool_ids: list[int],
+    ) -> Hairdresser:
+        hairdresser = Hairdresser(self.hairdresser_id, name)
 
-        master = Master(self.master_id, name)
+        for service_id in service_ids:
+            service = self._find_by_id(self.salon.services, service_id)
+            if service is None:
+                raise NotFoundError("Service not found")
+            hairdresser.add_service(service)
 
-        for sid in service_ids:
+        for tool_id in tool_ids:
+            tool = self._find_by_id(self.salon.tools, tool_id)
+            if tool is None:
+                raise NotFoundError("Tool not found")
+            hairdresser.add_tool(tool)
 
-            service = next(
-                (s for s in self.salon.services if s.id == sid),
-                None
-            )
-
-            if service:
-                master.add_service(service)
-
-        self.master_id += 1
-
-        self.salon.add_master(master)
-
+        self.hairdresser_id += 1
+        self.salon.add_hairdresser(hairdresser)
         self._save()
-
-        return master
+        return hairdresser
 
     def create_service(self, name: str, duration: int, price: float) -> Service:
         service = Service(self.service_id, name, duration, price)
@@ -99,69 +128,147 @@ class SalonManager:
         self._save()
         return service
 
-    def book_appointment(
-            self,
-            client_id: int,
-            master_id: int,
-            service_id: int,
-            time: datetime,
-    ) -> Appointment:
+    def create_tool(self, name: str) -> Tool:
+        tool = Tool(self.tool_id, name)
+        self.tool_id += 1
+        self.salon.add_tool(tool)
+        self._save()
+        return tool
 
+    def create_mirror(self, label: str) -> Mirror:
+        mirror = Mirror(self.mirror_id, label)
+        self.mirror_id += 1
+        self.salon.add_mirror(mirror)
+        self._save()
+        return mirror
+
+    def create_chair(self, label: str) -> Chair:
+        chair = Chair(self.chair_id, label)
+        self.chair_id += 1
+        self.salon.add_chair(chair)
+        self._save()
+        return chair
+
+    def book_haircut(
+        self,
+        client_id: int,
+        hairdresser_id: int,
+        service_id: int,
+        chair_id: int,
+        mirror_id: int,
+        time: datetime,
+    ) -> Appointment:
         client = self._find_by_id(self.salon.clients, client_id)
-        if not client:
+        if client is None:
             raise NotFoundError("Client not found")
 
-        master = self._find_by_id(self.salon.masters, master_id)
-        if not master:
-            raise NotFoundError("Master not found")
+        hairdresser = self._find_by_id(self.salon.hairdressers, hairdresser_id)
+        if hairdresser is None:
+            raise NotFoundError("Hairdresser not found")
 
         service = self._find_by_id(self.salon.services, service_id)
-        if not service:
+        if service is None:
             raise NotFoundError("Service not found")
 
-        if not master.can_do_service(service):
-            raise BookingError("Master cannot perform this service")
+        chair = self._find_by_id(self.salon.chairs, chair_id)
+        if chair is None:
+            raise NotFoundError("Chair not found")
 
-        if self._master_has_time_conflict(master, service, time):
-            raise BookingError("Master is busy at this time")
+        mirror = self._find_by_id(self.salon.mirrors, mirror_id)
+        if mirror is None:
+            raise NotFoundError("Mirror not found")
+
+        if not hairdresser.can_do_service(service):
+            raise BookingError("Hairdresser cannot perform this service")
+
+        if self._has_time_conflict(time, service, hairdresser, chair, mirror):
+            raise BookingError("Selected time slot is not available")
 
         appointment = Appointment(
-            self.appointment_id,
-            client,
-            master,
-            service,
-            time,
+            id=self.appointment_id,
+            client=client,
+            hairdresser=hairdresser,
+            service=service,
+            chair=chair,
+            mirror=mirror,
+            time=time,
         )
 
         self.appointment_id += 1
-
         self.salon.add_appointment(appointment)
 
-        master.book_time(time)
-
+        hairdresser.book_time(time)
+        chair.book_time(time)
+        mirror.book_time(time)
         self._save()
 
         return appointment
 
+    def perform_haircut_and_styling(
+        self,
+        appointment_id: int,
+        tool_ids: list[int],
+    ) -> Appointment:
+        appointment = self._find_by_id(self.salon.appointments, appointment_id)
+        if appointment is None:
+            raise NotFoundError("Appointment not found")
+
+        tools: list[Tool] = []
+        for tool_id in tool_ids:
+            tool = self._find_by_id(self.salon.tools, tool_id)
+            if tool is None:
+                raise NotFoundError("Tool not found")
+            tools.append(tool)
+
+        if not appointment.hairdresser.has_tools(tools):
+            raise BookingError("Hairdresser does not have the selected tools")
+
+        appointment.perform_service(tools)
+        appointment.hairdresser.release_time(appointment.time)
+        appointment.chair.release_time(appointment.time)
+        appointment.mirror.release_time(appointment.time)
+        self._save()
+        return appointment
+
+    def provide_hair_care_consultation(
+        self,
+        appointment_id: int,
+        notes: str,
+    ) -> Appointment:
+        appointment = self._find_by_id(self.salon.appointments, appointment_id)
+        if appointment is None:
+            raise NotFoundError("Appointment not found")
+
+        appointment.add_consultation(notes)
+        self._save()
+        return appointment
+
+    def pay_for_service(self, appointment_id: int) -> float:
+        appointment = self._find_by_id(self.salon.appointments, appointment_id)
+        if appointment is None:
+            raise NotFoundError("Appointment not found")
+
+        amount = appointment.pay()
+        self._save()
+        return amount
+
     def cancel_appointment(self, appointment_id: int) -> None:
         appointment = self._find_by_id(self.salon.appointments, appointment_id)
-
-        if not appointment:
+        if appointment is None:
             raise NotFoundError("Appointment not found")
 
         appointment.cancel()
-        appointment.master.release_time(appointment.time)
+        appointment.hairdresser.release_time(appointment.time)
+        appointment.chair.release_time(appointment.time)
+        appointment.mirror.release_time(appointment.time)
         self._save()
 
-    def list_appointments(self):
-        return self.salon.appointments
+    def list_appointments(self, client_id: int | None = None) -> list[Appointment]:
+        if client_id is None:
+            return self.salon.appointments
 
-    def complete_appointment(self, appointment_id: int) -> None:
-        appointment = self._find_by_id(self.salon.appointments, appointment_id)
-
-        if not appointment:
-            raise NotFoundError("Appointment not found")
-
-        appointment.complete()
-        appointment.master.release_time(appointment.time)
-        self._save()
+        return [
+            appointment
+            for appointment in self.salon.appointments
+            if appointment.client.id == client_id
+        ]

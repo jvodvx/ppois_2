@@ -6,15 +6,17 @@
             "phone": "123"
         }
     ],
-    "masters": [
+    "hairdressers": [
         {
             "id": 1,
             "name": "Olga",
             "services": [
                 1
-            ]
+            ],
+            "tools": []
         }
     ],
+    "tools": [],
     "services": [
         {
             "id": 1,
@@ -29,5 +31,7 @@
             "price": 50
         }
     ],
+    "mirrors": [],
+    "chairs": [],
     "appointments": []
 }

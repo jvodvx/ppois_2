@@ -13,6 +13,11 @@ class BookingError(SalonError):
     pass
 
 
+class PaymentError(SalonError):
+    """Ошибка оплаты."""
+    pass
+
+
 class ValidationError(SalonError):
     """Ошибка валидации данных."""
     pass

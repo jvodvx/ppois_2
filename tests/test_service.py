@@ -6,7 +6,7 @@ from src.exceptions import ValidationError
 
 class TestService(unittest.TestCase):
 
-    def test_create_service(self):
+    def test_create_service(self) -> None:
 
         service = Service(1, "Haircut", 30, 20)
 
@@ -14,12 +14,12 @@ class TestService(unittest.TestCase):
         self.assertEqual(service.duration, 30)
         self.assertEqual(service.price, 20)
 
-    def test_invalid_duration(self):
+    def test_invalid_duration(self) -> None:
 
         with self.assertRaises(ValidationError):
             Service(1, "Haircut", -10, 20)
 
-    def test_invalid_price(self):
+    def test_invalid_price(self) -> None:
 
         with self.assertRaises(ValidationError):
             Service(1, "Haircut", 30, -5)
