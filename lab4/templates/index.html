@@ -1,0 +1,631 @@
+{% extends "base.html" %}
+
+{% block title %}Парикмахерская{% endblock %}
+
+{% block content %}
+    <section id="salon-space" class="band">
+        <div class="content">
+            <div class="section-heading">
+                <h2>Пространство салона</h2>
+            </div>
+
+            <div class="scene-layout">
+                <section class="scene-panel">
+                    <div class="salon-scene">
+                        <img src="{{ url_for('static', filename='images/salon-scene.png') }}" alt="Схема парикмахерской со стульями, зеркалами и рабочими инструментами">
+                        <a class="hotspot hotspot-chair-left" href="#chair-form">
+                            <span>Добавить стул</span>
+                        </a>
+                        <a class="hotspot hotspot-chair-right" href="#chair-form">
+                            <span>Добавить стул</span>
+                        </a>
+                        <a class="hotspot hotspot-mirror-left" href="#mirror-form">
+                            <span>Добавить зеркало</span>
+                        </a>
+                        <a class="hotspot hotspot-mirror-right" href="#mirror-form">
+                            <span>Добавить зеркало</span>
+                        </a>
+                        <a class="hotspot hotspot-tools" href="#tool-form">
+                            <span>Добавить инструмент</span>
+                        </a>
+                    </div>
+                </section>
+
+                <aside class="sidebar-panel compact-sidebar">
+                    <section id="chair-form" class="form-panel anchor-target compact-form">
+                        <h3>Стул</h3>
+                        <form method="post" action="{{ url_for('create_chair') }}" class="form-stack compact-stack">
+                            <input type="hidden" name="next_anchor" value="salon-space">
+                            <label>
+                                <span>Обозначение</span>
+                                <input type="text" name="label" required>
+                            </label>
+                            <button type="submit">Добавить</button>
+                        </form>
+                    </section>
+
+                    <section id="mirror-form" class="form-panel anchor-target compact-form">
+                        <h3>Зеркало</h3>
+                        <form method="post" action="{{ url_for('create_mirror') }}" class="form-stack compact-stack">
+                            <input type="hidden" name="next_anchor" value="salon-space">
+                            <label>
+                                <span>Обозначение</span>
+                                <input type="text" name="label" required>
+                            </label>
+                            <button type="submit">Добавить</button>
+                        </form>
+                    </section>
+
+                    <section id="tool-form" class="form-panel anchor-target compact-form">
+                        <h3>Инструмент</h3>
+                        <form method="post" action="{{ url_for('create_tool') }}" class="form-stack compact-stack">
+                            <input type="hidden" name="next_anchor" value="salon-space">
+                            <label>
+                                <span>Название</span>
+                                <input type="text" name="name" required>
+                            </label>
+                            <button type="submit">Добавить</button>
+                        </form>
+                    </section>
+                </aside>
+            </div>
+        </div>
+    </section>
+
+    <section id="people-space" class="band band-soft">
+        <div class="content">
+            <div class="section-heading">
+                <h2>Клиенты и команда</h2>
+            </div>
+
+            <div class="split-layout">
+                <section class="form-panel anchor-target">
+                    <h3>Клиент</h3>
+                    <form method="post" action="{{ url_for('create_client') }}" class="form-stack">
+                        <input type="hidden" name="next_anchor" value="people-space">
+                        <label>
+                            <span>Имя клиента</span>
+                            <input type="text" name="name" required>
+                        </label>
+                        <label>
+                            <span>Телефон</span>
+                            <input type="text" name="phone" required>
+                        </label>
+                        <button type="submit">Добавить клиента</button>
+                    </form>
+                </section>
+
+                <section class="form-panel anchor-target">
+                    <h3>Парикмахер</h3>
+                    <form method="post" action="{{ url_for('create_hairdresser') }}" class="form-stack">
+                        <input type="hidden" name="next_anchor" value="people-space">
+                        <label>
+                            <span>Имя парикмахера</span>
+                            <input type="text" name="name" required>
+                        </label>
+
+                        <details class="select-dropdown">
+                            <summary>Доступные услуги</summary>
+                            <div class="checkbox-list">
+                                {% for service in services %}
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" name="service_ids" value="{{ service.id }}">
+                                        <span>{{ service.name }}</span>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                        </details>
+
+                        <details class="select-dropdown">
+                            <summary>Инструменты</summary>
+                            <div class="checkbox-list">
+                                {% for tool in tools %}
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" name="tool_ids" value="{{ tool.id }}">
+                                        <span>{{ tool.name }}</span>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                        </details>
+
+                        <button type="submit">Добавить парикмахера</button>
+                    </form>
+                </section>
+            </div>
+        </div>
+    </section>
+
+    <section id="booking-section" class="band booking-band anchor-target">
+        <div class="content booking-layout">
+            <section class="booking-visual">
+                <img src="{{ url_for('static', filename='images/booking-room.png') }}" alt="Интерьер салона в розовых тонах для раздела записи клиента">
+            </section>
+
+            <section class="booking-panel">
+                <div class="section-heading compact">
+                    <h2>Запись клиента</h2>
+                </div>
+
+                <form method="post" action="{{ url_for('book_appointment') }}" class="form-grid booking-form" id="booking-form">
+                    <input type="hidden" name="next_anchor" value="booking-section">
+                    <label>
+                        <span>Клиент</span>
+                        <select name="client_id" required>
+                            <option value="">Выберите клиента</option>
+                            {% for client in clients %}
+                                <option value="{{ client.id }}">{{ client.id }}. {{ client.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <label>
+                        <span>Парикмахер</span>
+                        <select name="hairdresser_id" required>
+                            <option value="">Выберите парикмахера</option>
+                            {% for hairdresser in hairdressers %}
+                                <option value="{{ hairdresser.id }}">{{ hairdresser.id }}. {{ hairdresser.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <label>
+                        <span>Стул</span>
+                        <select name="chair_id" required>
+                            <option value="">Выберите стул</option>
+                            {% for chair in chairs %}
+                                <option value="{{ chair.id }}">{{ chair.id }}. {{ chair.label }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <label>
+                        <span>Зеркало</span>
+                        <select name="mirror_id" required>
+                            <option value="">Выберите зеркало</option>
+                            {% for mirror in mirrors %}
+                                <option value="{{ mirror.id }}">{{ mirror.id }}. {{ mirror.label }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <label class="booking-time-field">
+                        <span>Дата и время</span>
+                        <input
+                            type="datetime-local"
+                            name="time"
+                            id="booking-time"
+                            min="{{ min_booking_time }}"
+                            required
+                        >
+                    </label>
+
+                    <div class="service-strip booking-service-strip">
+                        <h3>Услуги</h3>
+                        <div class="service-carousel">
+                            <div class="service-list">
+                                {% for service in services %}
+                                    <label class="service-choice">
+                                        <input type="radio" name="service_id" value="{{ service.id }}" required>
+                                        <span class="service-choice__content">
+                                            <strong>{{ service.name }}</strong>
+                                            <span>{{ service.duration }} мин</span>
+                                            <span>{{ "%.2f"|format(service.price) }}</span>
+                                        </span>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="booking-submit">
+                        <button type="submit">Создать запись</button>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </section>
+
+    <section id="workflow-section" class="band">
+        <div class="content">
+            <div class="section-heading">
+                <h2>Рабочие записи</h2>
+            </div>
+
+            <div class="workflow-grid">
+                <section class="queue-panel">
+                    <div class="queue-heading">
+                        <h3>Ожидают завершения</h3>
+                        <span>{{ booked_appointments|length }}</span>
+                    </div>
+
+                    {% if booked_appointments %}
+                        <div class="queue-list">
+                            {% for appointment in booked_appointments %}
+                                <article class="queue-item">
+                                    <div class="queue-item__meta">
+                                        <strong>#{{ appointment.id }} · {{ appointment.client.name }}</strong>
+                                        <span>{{ appointment.service.name }} · {{ appointment.hairdresser.name }}</span>
+                                        <span>{{ appointment.time | datetime_local }}</span>
+                                    </div>
+                                    <form method="post" action="{{ url_for('complete_appointment', appointment_id=appointment.id) }}" class="mini-form">
+                                        <input type="hidden" name="next_anchor" value="workflow-section">
+                                        {% if appointment.service.requires_notes %}
+                                            <label>
+                                                <span>Рекомендации</span>
+                                                <textarea name="notes" rows="3" required></textarea>
+                                            </label>
+                                        {% else %}
+                                            <details class="select-dropdown">
+                                                <summary>Использованные инструменты</summary>
+                                                <div class="checkbox-list">
+                                                    {% for tool in tools %}
+                                                        <label class="checkbox-item">
+                                                            <input type="checkbox" name="tool_ids" value="{{ tool.id }}">
+                                                            <span>{{ tool.name }}</span>
+                                                        </label>
+                                                    {% endfor %}
+                                                </div>
+                                            </details>
+                                        {% endif %}
+                                        <div class="button-row">
+                                            <button type="submit">Завершить</button>
+                                        </div>
+                                    </form>
+                                    <form method="post" action="{{ url_for('cancel_appointment', appointment_id=appointment.id) }}">
+                                        <input type="hidden" name="next_anchor" value="workflow-section">
+                                        <button type="submit" class="secondary">Отменить запись</button>
+                                    </form>
+                                </article>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="empty-block">Нет записей.</p>
+                    {% endif %}
+                </section>
+
+                <section class="queue-panel">
+                    <div class="queue-heading">
+                        <h3>Ожидают оплаты</h3>
+                        <span>{{ completed_unpaid_appointments|length }}</span>
+                    </div>
+
+                    {% if completed_unpaid_appointments %}
+                        <div class="queue-list">
+                            {% for appointment in completed_unpaid_appointments %}
+                                <article class="queue-item">
+                                    <div class="queue-item__meta">
+                                        <strong>#{{ appointment.id }} · {{ appointment.client.name }}</strong>
+                                        <span>{{ appointment.service.name }}</span>
+                                        <span>{{ "%.2f"|format(appointment.service.price) }}</span>
+                                    </div>
+                                    <form method="post" action="{{ url_for('pay_appointment', appointment_id=appointment.id) }}">
+                                        <input type="hidden" name="next_anchor" value="workflow-section">
+                                        <button type="submit">Принять оплату</button>
+                                    </form>
+                                </article>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="empty-block">Нет записей.</p>
+                    {% endif %}
+                </section>
+            </div>
+        </div>
+    </section>
+
+    <section id="registry-section" class="band band-soft anchor-target">
+        <div class="content">
+            <div class="section-heading">
+                <h2>Журнал и справочники</h2>
+            </div>
+
+            <div class="registry-grid registry-grid--top">
+                <section class="form-panel">
+                    <h3>Новая услуга</h3>
+                    <form method="post" action="{{ url_for('create_service') }}" class="form-stack">
+                        <input type="hidden" name="next_anchor" value="registry-section">
+                        <label>
+                            <span>Название</span>
+                            <input type="text" name="name" required>
+                        </label>
+                        <label>
+                            <span>Длительность, мин</span>
+                            <input type="number" name="duration" min="1" required>
+                        </label>
+                        <label>
+                            <span>Цена</span>
+                            <input type="number" name="price" min="0" step="0.01" required>
+                        </label>
+                        <label>
+                            <span>Тип выполнения</span>
+                            <select name="execution_mode" required>
+                                <option value="tool_based">С инструментами</option>
+                                <option value="consultation">Консультация</option>
+                            </select>
+                        </label>
+                        <button type="submit">Добавить услугу</button>
+                    </form>
+                </section>
+            </div>
+
+            <section class="table-panel filter-panel">
+                <div class="table-heading filter-heading">
+                    <h3>Журнал записей</h3>
+                    <form method="get" action="{{ url_for('index') }}#registry-section" class="inline-filter">
+                        <select name="client_id">
+                            <option value="">Все клиенты</option>
+                            {% for client in clients %}
+                                <option value="{{ client.id }}" {% if selected_client_id == client.id %}selected{% endif %}>
+                                    {{ client.id }}. {{ client.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit">Показать</button>
+                    </form>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Клиент</th>
+                            <th>Парикмахер</th>
+                            <th>Услуга</th>
+                            <th>Стул</th>
+                            <th>Зеркало</th>
+                            <th>Дата и время</th>
+                            <th>Статус</th>
+                            <th>Оплата</th>
+                            <th>Детали</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if appointments %}
+                            {% for appointment in appointments %}
+                                <tr>
+                                    <td>{{ appointment.id }}</td>
+                                    <td>{{ appointment.client.name }}</td>
+                                    <td>{{ appointment.hairdresser.name }}</td>
+                                    <td>{{ appointment.service.name }}</td>
+                                    <td>{{ appointment.chair.label }}</td>
+                                    <td>{{ appointment.mirror.label }}</td>
+                                    <td>{{ appointment.time | datetime_local }}</td>
+                                    <td><span class="status {{ appointment.status.value }}">{{ appointment.status.value }}</span></td>
+                                    <td>
+                                        {% if appointment.paid %}
+                                            {{ "%.2f"|format(appointment.payment_amount) }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if appointment.consultation_notes %}
+                                            {{ appointment.consultation_notes }}
+                                        {% elif appointment.used_tools %}
+                                            {{ appointment.used_tools | map(attribute='name') | join(', ') }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="10" class="empty">Записи отсутствуют.</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </section>
+
+            <div class="registry-grid">
+                <section class="table-panel">
+                    <div class="table-heading">
+                        <h3>Услуги</h3>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Название</th>
+                                <th>Длительность</th>
+                                <th>Цена</th>
+                                <th>Тип</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for service in services %}
+                                <tr>
+                                    <td>{{ service.id }}</td>
+                                    <td>{{ service.name }}</td>
+                                    <td>{{ service.duration }} мин</td>
+                                    <td>{{ "%.2f"|format(service.price) }}</td>
+                                    <td>
+                                        {% if service.requires_notes %}
+                                            Консультация
+                                        {% else %}
+                                            С инструментами
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </section>
+
+                <section class="table-panel">
+                    <div class="table-heading">
+                        <h3>Клиенты</h3>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Имя</th>
+                                <th>Телефон</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if clients %}
+                                {% for client in clients %}
+                                    <tr>
+                                        <td>{{ client.id }}</td>
+                                        <td>{{ client.name }}</td>
+                                        <td>{{ client.phone }}</td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr><td colspan="3" class="empty">Список клиентов пуст.</td></tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </section>
+
+                <section class="table-panel">
+                    <div class="table-heading">
+                        <h3>Парикмахеры</h3>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Имя</th>
+                                <th>Услуги</th>
+                                <th>Инструменты</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if hairdressers %}
+                                {% for hairdresser in hairdressers %}
+                                    <tr>
+                                        <td>{{ hairdresser.id }}</td>
+                                        <td>{{ hairdresser.name }}</td>
+                                        <td>{{ hairdresser.services | map(attribute='name') | join(', ') or '—' }}</td>
+                                        <td>{{ hairdresser.tools | map(attribute='name') | join(', ') or '—' }}</td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr><td colspan="4" class="empty">Список парикмахеров пуст.</td></tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </section>
+
+                <section class="table-panel">
+                    <div class="table-heading">
+                        <h3>Инструменты</h3>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Название</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if tools %}
+                                {% for tool in tools %}
+                                    <tr>
+                                        <td>{{ tool.id }}</td>
+                                        <td>{{ tool.name }}</td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr><td colspan="2" class="empty">Инструменты отсутствуют.</td></tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </section>
+
+                <section class="table-panel">
+                    <div class="table-heading">
+                        <h3>Зеркала</h3>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Обозначение</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if mirrors %}
+                                {% for mirror in mirrors %}
+                                    <tr>
+                                        <td>{{ mirror.id }}</td>
+                                        <td>{{ mirror.label }}</td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr><td colspan="2" class="empty">Зеркала отсутствуют.</td></tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </section>
+
+                <section class="table-panel">
+                    <div class="table-heading">
+                        <h3>Стулья</h3>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Обозначение</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if chairs %}
+                                {% for chair in chairs %}
+                                    <tr>
+                                        <td>{{ chair.id }}</td>
+                                        <td>{{ chair.label }}</td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr><td colspan="2" class="empty">Стулья отсутствуют.</td></tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </section>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        (function () {
+            const bookingForm = document.getElementById("booking-form");
+            const bookingTime = document.getElementById("booking-time");
+            if (!bookingForm || !bookingTime) {
+                return;
+            }
+
+            function validateBookingTime() {
+                if (!bookingTime.value) {
+                    bookingTime.setCustomValidity("");
+                    return true;
+                }
+
+                const selectedDate = new Date(bookingTime.value);
+                const now = new Date();
+                const hour = selectedDate.getHours();
+                const minutes = selectedDate.getMinutes();
+                const totalMinutes = hour * 60 + minutes;
+
+                if (selectedDate <= now) {
+                    bookingTime.setCustomValidity("Выберите будущую дату и время.");
+                    return false;
+                }
+
+                if (totalMinutes < 8 * 60 || totalMinutes >= 20 * 60) {
+                    bookingTime.setCustomValidity("Запись доступна с 08:00 до 20:00.");
+                    return false;
+                }
+
+                bookingTime.setCustomValidity("");
+                return true;
+            }
+
+            bookingTime.addEventListener("input", validateBookingTime);
+            bookingForm.addEventListener("submit", function (event) {
+                if (!validateBookingTime()) {
+                    bookingTime.reportValidity();
+                    event.preventDefault();
+                }
+            });
+        }());
+    </script>
+{% endblock %}

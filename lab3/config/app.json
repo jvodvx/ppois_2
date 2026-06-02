@@ -1,0 +1,19 @@
+﻿{
+  "window": {
+    "title": "Pac-Man Lab 3",
+    "width": 896,
+    "height": 768,
+    "fps": 60
+  },
+  "grid": {
+    "tile_size": 32
+  },
+  "player": {
+    "speed": 4,
+    "radius_padding": 4
+  },
+  "enemies": {
+    "speed": 3,
+    "types": ["chaser", "patrol"]
+  }
+}

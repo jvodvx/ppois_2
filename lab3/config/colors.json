@@ -1,0 +1,14 @@
+﻿{
+  "background": "#000000",
+  "wall": "#2121FF",
+  "floor": "#050505",
+  "pellet": "#F5F5F5",
+  "power_pellet": "#FFD1DC",
+  "pacman": "#FFD200",
+  "text": "#F4F1DE",
+  "accent": "#E07A5F",
+  "ghosts": {
+    "chaser": "#FF3030",
+    "patrol": "#00FFFF"
+  }
+}

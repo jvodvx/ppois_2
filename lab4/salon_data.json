@@ -1,0 +1,313 @@
+{
+    "clients": [
+        {
+            "id": 1,
+            "name": "Anna",
+            "phone": "14"
+        },
+        {
+            "id": 2,
+            "name": "Boris",
+            "phone": "123"
+        },
+        {
+            "id": 3,
+            "name": "Polina",
+            "phone": "65"
+        },
+        {
+            "id": 4,
+            "name": "рустам",
+            "phone": "24567"
+        },
+        {
+            "id": 5,
+            "name": "efsfes",
+            "phone": "24343"
+        },
+        {
+            "id": 6,
+            "name": "[\"1\", \"2\"]",
+            "phone": "[\"323\"."
+        },
+        {
+            "id": 7,
+            "name": "\\n",
+            "phone": "\\n"
+        },
+        {
+            "id": 8,
+            "name": "ffes",
+            "phone": "gsfs"
+        }
+    ],
+    "hairdressers": [
+        {
+            "id": 1,
+            "name": "Oksana",
+            "services": [
+                1,
+                2
+            ],
+            "tools": [
+                1,
+                2,
+                3,
+                5,
+                6
+            ]
+        },
+        {
+            "id": 2,
+            "name": "Ksenia",
+            "services": [
+                3
+            ],
+            "tools": [
+                2,
+                3,
+                4
+            ]
+        },
+        {
+            "id": 3,
+            "name": "elena",
+            "services": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "tools": [
+                1,
+                2,
+                3,
+                4,
+                6
+            ]
+        },
+        {
+            "id": 4,
+            "name": "diza",
+            "services": [
+                2,
+                3
+            ],
+            "tools": [
+                3,
+                4
+            ]
+        }
+    ],
+    "tools": [
+        {
+            "id": 1,
+            "name": "Scissors"
+        },
+        {
+            "id": 2,
+            "name": "Brushing"
+        },
+        {
+            "id": 3,
+            "name": "Airdryer"
+        },
+        {
+            "id": 4,
+            "name": "Diffuser"
+        },
+        {
+            "id": 5,
+            "name": "Razor"
+        },
+        {
+            "id": 6,
+            "name": "Hairdye"
+        },
+        {
+            "id": 7,
+            "name": "pins"
+        }
+    ],
+    "services": [
+        {
+            "id": 1,
+            "name": "Haircut",
+            "duration": 30,
+            "price": 25.0,
+            "execution_mode": "tool_based"
+        },
+        {
+            "id": 2,
+            "name": "Styling",
+            "duration": 40,
+            "price": 20.0,
+            "execution_mode": "tool_based"
+        },
+        {
+            "id": 3,
+            "name": "Consultation",
+            "duration": 20,
+            "price": 15.0,
+            "execution_mode": "consultation"
+        },
+        {
+            "id": 4,
+            "name": "Haircoloring",
+            "duration": 120,
+            "price": 80.0,
+            "execution_mode": "tool_based"
+        }
+    ],
+    "mirrors": [
+        {
+            "id": 1,
+            "label": "1"
+        },
+        {
+            "id": 2,
+            "label": "2"
+        },
+        {
+            "id": 3,
+            "label": "3"
+        },
+        {
+            "id": 4,
+            "label": "vip"
+        },
+        {
+            "id": 5,
+            "label": "rsggrd"
+        },
+        {
+            "id": 6,
+            "label": "afeefs"
+        }
+    ],
+    "chairs": [
+        {
+            "id": 1,
+            "label": "1"
+        },
+        {
+            "id": 2,
+            "label": "2"
+        },
+        {
+            "id": 3,
+            "label": "3"
+        },
+        {
+            "id": 4,
+            "label": "vip"
+        },
+        {
+            "id": 5,
+            "label": "gethdfth"
+        }
+    ],
+    "appointments": [
+        {
+            "id": 1,
+            "client": 1,
+            "hairdresser": 1,
+            "service": 1,
+            "chair": 1,
+            "mirror": 1,
+            "time": "2026-04-14T14:00:00",
+            "consultation_notes": "",
+            "used_tools": [
+                1,
+                2
+            ],
+            "status": "completed",
+            "paid": true,
+            "payment_amount": 25.0
+        },
+        {
+            "id": 2,
+            "client": 2,
+            "hairdresser": 2,
+            "service": 3,
+            "chair": 4,
+            "mirror": 4,
+            "time": "2026-04-01T10:30:00",
+            "consultation_notes": "",
+            "used_tools": [],
+            "status": "cancelled",
+            "paid": false,
+            "payment_amount": 0.0
+        },
+        {
+            "id": 3,
+            "client": 3,
+            "hairdresser": 1,
+            "service": 2,
+            "chair": 1,
+            "mirror": 1,
+            "time": "2026-03-31T17:00:00",
+            "consultation_notes": "",
+            "used_tools": [],
+            "status": "cancelled",
+            "paid": false,
+            "payment_amount": 0.0
+        },
+        {
+            "id": 4,
+            "client": 4,
+            "hairdresser": 3,
+            "service": 1,
+            "chair": 3,
+            "mirror": 3,
+            "time": "2026-06-05T10:50:00",
+            "consultation_notes": "",
+            "used_tools": [],
+            "status": "booked",
+            "paid": false,
+            "payment_amount": 0.0
+        },
+        {
+            "id": 5,
+            "client": 3,
+            "hairdresser": 1,
+            "service": 1,
+            "chair": 1,
+            "mirror": 1,
+            "time": "2026-05-28T09:00:00",
+            "consultation_notes": "",
+            "used_tools": [],
+            "status": "booked",
+            "paid": false,
+            "payment_amount": 0.0
+        },
+        {
+            "id": 6,
+            "client": 3,
+            "hairdresser": 3,
+            "service": 1,
+            "chair": 2,
+            "mirror": 2,
+            "time": "2026-05-28T09:00:00",
+            "consultation_notes": "",
+            "used_tools": [],
+            "status": "booked",
+            "paid": false,
+            "payment_amount": 0.0
+        },
+        {
+            "id": 7,
+            "client": 2,
+            "hairdresser": 1,
+            "service": 1,
+            "chair": 1,
+            "mirror": 1,
+            "time": "2028-02-29T15:00:00",
+            "consultation_notes": "",
+            "used_tools": [],
+            "status": "booked",
+            "paid": false,
+            "payment_amount": 0.0
+        }
+    ]
+}
